@@ -1,0 +1,55 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!--
+      Valheim runs on Unity 6 and its assemblies are netstandard2.1-based, so this must be
+      netstandard2.1. Targeting net462 compiles only until you touch a game type whose members
+      come from netstandard, and it drags ~100 framework facade assemblies into the output
+      which must never be shipped into BepInEx\plugins.
+    -->
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <AssemblyName>NoMapWayfinding</AssemblyName>
+    <RootNamespace>NoMapWayfinding</RootNamespace>
+    <Product>NoMap Wayfinding</Product>
+    <Version>1.0.0</Version>
+    <Description>Hides the Valheim minimap; the world map is readable only at a cartography table, which auto-syncs exploration between players.</Description>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <DebugType>portable</DebugType>
+    <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
+    <GenerateDependencyFile>false</GenerateDependencyFile>
+    <NoWarn>$(NoWarn);CS0649;CS0169;MSB3277</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="BepInEx.Core" Version="5.4.21" IncludeAssets="compile" PrivateAssets="all" />
+    <PackageReference Include="HarmonyX" Version="2.10.1" IncludeAssets="compile" PrivateAssets="all" />
+  </ItemGroup>
+
+  <!--
+    Game assemblies come from lib\, copied out of <Valheim>\valheim_Data\Managed\.
+    They are Iron Gate's files and are gitignored; see lib\README.md.
+
+    There is deliberately no NuGet fallback. The public Valheim.GameLibs package is pinned at
+    0.202.14, which is a Unity 2020 / net40 build of the game - it would compile, but against
+    an API several years removed from the one that actually ships.
+  -->
+  <PropertyGroup>
+    <GameLibDir>$(MSBuildThisFileDirectory)..\..\lib\</GameLibDir>
+  </PropertyGroup>
+
+  <Target Name="CheckGameLibs" BeforeTargets="CoreCompile" Condition="!Exists('$(GameLibDir)assembly_valheim.dll')">
+    <Error Text="No game assemblies found in lib\. Copy them from &lt;Valheim&gt;\valheim_Data\Managed\ - see lib\README.md for the list." />
+  </Target>
+
+  <ItemGroup>
+    <Reference Include="$(GameLibDir)*.dll" Private="false" />
+  </ItemGroup>
+
+  <!-- Set VALHEIM_PLUGINS to your BepInEx\plugins folder and every build lands in the game. -->
+  <Target Name="DeployToGame" AfterTargets="Build" Condition="'$(VALHEIM_PLUGINS)' != '' And Exists('$(VALHEIM_PLUGINS)')">
+    <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(VALHEIM_PLUGINS)" />
+    <Message Importance="high" Text="NoMap Wayfinding: deployed to $(VALHEIM_PLUGINS)" />
+  </Target>
+
+</Project>
