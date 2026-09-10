@@ -55,9 +55,9 @@ namespace NoMapWayfinding
                 "do not have this mod. Be aware that hosting a game from your own client makes you a " +
                 "server, so switching this on there turns away friends who have not installed it. " +
                 "The vanilla NoMap world key is usually the better tool: it costs unmodded clients " +
-                "the map through the game's own code without excluding anyone. And this raises the " +
-                "bar rather than guaranteeing anything, since client-side rules can always be " +
-                "defeated by someone willing to edit the assembly.");
+                "the map through the game's own code without excluding anyone. Treat this as keeping " +
+                "honest players honest rather than as a guarantee: a mod cannot enforce anything on " +
+                "a machine it does not control.");
 
             ClientGraceSeconds = cfg.Bind("Server", "ClientGraceSeconds", 20f,
                 new ConfigDescription(

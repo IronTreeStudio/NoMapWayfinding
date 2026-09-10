@@ -41,15 +41,10 @@ key through Iron Gate's own code, unmodded ones included. The mod then only has 
 vanilla cannot: open the map at a cartography table.
 
 This is real enforcement rather than a rule clients agree to follow, and it inverts the default.
-Installing nothing now means having no map, instead of keeping one. Three facts in the shipping
-assembly make it work:
-
-- `Game.m_noMap` is read in exactly one place, `Minimap.SetMapMode`, so the mod clears it for the
-  duration of that single call to open the map at a table and restores it immediately after.
-- `Minimap.UpdateExplore` has no no-map check and runs unconditionally, so **every** player keeps
-  recording exploration, whether or not they can see it.
-- `MapTable.OnRead` and `OnWrite` never touch the flag, so unmodded players still contribute
-  their exploration to tables and pull the group's back down. They simply cannot see the result.
+Installing nothing now means having no map, instead of keeping one. It costs nothing elsewhere,
+either: every player keeps recording exploration whether or not they can see it, and unmodded
+players can still use cartography tables normally. They contribute their exploration to a table
+and pull the group's back down, they simply cannot see the result.
 
 The cost: an unmodded player loses the map completely, pins and death markers included, not just
 the minimap. And `NoMap` is a property of the world, so it applies in single player on that world
@@ -66,24 +61,17 @@ Rules only bind players who installed the mod, which is nobody who did not want 
 only if you run a server and want it, and note that hosting a game from your own client makes you
 a server, so switching it on there turns away friends who have not installed it.
 
+A player who has not identified themselves within `Server.ClientGraceSeconds` is disconnected and
+shown a real error screen rather than being dropped without explanation, whether or not they have
+the mod installed.
+
 The NoMap world key above is usually the better tool. It costs unmodded clients the map through
 the game's own code without excluding anyone from the server.
 
-The signal is one the mod already produces: a modded client asks the server for its rules as
-soon as it connects, and a vanilla client never does. Nothing is bolted onto Valheim's peer
-negotiation. Anyone who has not identified themselves within `Server.ClientGraceSeconds` is sent
-an `ErrorVersion` and hung up on a second later - the delay matters, because `ZNet.Disconnect`
-disposes the peer and would discard the message. `RPC_Error` is a vanilla handler, so a player
-without the mod still gets a real error screen rather than an unexplained drop.
-
-**This raises the bar; it does not guarantee anything.** Rules enforced on the client can always
-be defeated by someone willing to edit the assembly or answer the handshake themselves. The
-minimap is drawn on their machine and the server has no lever for it. Treat this as keeping
-honest players honest, not as a security boundary.
-
-Vanilla's own "no map" world modifier *is* enforced for everyone, but it disables the map
-outright - `Game.m_noMap` forces `MapMode.None` inside `SetMapMode` - so cartography tables stop
-working too, which defeats the point of this mod.
+**Neither of these is a security boundary.** Anything a mod checks on a player's own machine can
+be worked around by someone determined enough, and the minimap is drawn on their machine. Treat
+these as keeping honest players honest. Where you need a rule to hold regardless of goodwill, the
+NoMap world key is the closest thing available, because the game itself is what enforces it.
 
 ## Configuration
 
@@ -144,8 +132,8 @@ the mod was installed rather than blacking them all out on first login. A negati
 for the same reason: locking someone out of their own base table is worse than a missed check.
 
 Both this and `Table.NoRefundOnRemove` are rules, so a server sets them. Under the `NoMap`
-deployment that is unusually close to real enforcement - an unmodded client cannot open the map
-at all, so the only players who can perform the trick are the modded ones the server can bind.
+deployment that is unusually close to real enforcement, because an unmodded client cannot open
+the map at all.
 
 **Sharing.** Vanilla `MapTable.OnWrite` already calls `OnRead` internally, so writing is a
 complete two-way merge; only the read switch is one-directional. The mod calls Valheim's own

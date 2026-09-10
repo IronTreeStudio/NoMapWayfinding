@@ -1,0 +1,9 @@
+{
+  "name": "NoMapWayfinding",
+  "version_number": "1.0.0",
+  "website_url": "https://github.com/IronTreeStudio/NoMapWayfinding",
+  "description": "Hides the minimap and puts the world map on the cartography table, where it shows the group's shared exploration. A compass takes the minimap's place.",
+  "dependencies": [
+    "denikson-BepInExPack_Valheim-5.4.2350"
+  ]
+}
