@@ -34,6 +34,7 @@ namespace NoMapWayfinding
         public static ConfigEntry<bool> CompassShowBiome;
         public static ConfigEntry<string> CompassColor;
         public static ConfigEntry<string> CompassMarkerColor;
+        public static ConfigEntry<float> CompassShoutSeconds;
         public static ConfigEntry<KeyCode> SettingsKey;
 
         public static void Bind(ConfigFile cfg)
@@ -135,6 +136,14 @@ namespace NoMapWayfinding
             SettingsKey = cfg.Bind("Compass", "SettingsKey", KeyCode.F7,
                 "Opens a small panel for changing the compass colours in game, with the compass " +
                 "recolouring live behind it. Set to None to disable the panel entirely.");
+
+            CompassShoutSeconds = cfg.Bind("Compass", "ShoutMarkerSeconds", 120f,
+                new ConfigDescription(
+                    "When another player shouts, mark the direction it came from on the compass for " +
+                    "this many seconds, using the game's own shout icon. The marker stays where the " +
+                    "shout was, so it points at where they called from rather than following them. " +
+                    "Set to 0 to turn it off.",
+                    new AcceptableValueRange<float>(0f, 600f)));
         }
     }
 }

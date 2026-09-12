@@ -12,7 +12,7 @@
     <AssemblyName>NoMapWayfinding</AssemblyName>
     <RootNamespace>NoMapWayfinding</RootNamespace>
     <Product>NoMap Wayfinding</Product>
-    <Version>1.0.0</Version>
+    <Version>1.1.0</Version>
     <Description>Hides the Valheim minimap; the world map is readable only at a cartography table, which auto-syncs exploration between players.</Description>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <DebugType>portable</DebugType>

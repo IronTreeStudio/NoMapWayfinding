@@ -27,7 +27,7 @@ namespace NoMapWayfinding
     {
         public const string Guid = "com.rynwind.nomapwayfinding";
         public const string Name = "NoMap Wayfinding";
-        public const string Version = "1.0.0";
+        public const string Version = "1.1.0";
 
         internal static ManualLogSource Log;
 
@@ -74,6 +74,7 @@ namespace NoMapWayfinding
             _harmony.PatchAll(typeof(MapTablePatches));
             _harmony.PatchAll(typeof(PanelInputPatches));
             _harmony.PatchAll(typeof(PiecePatches));
+            _harmony.PatchAll(typeof(ChatPatches));
 
             gameObject.AddComponent<CompassHud>();
             gameObject.AddComponent<CompassSettingsPanel>();

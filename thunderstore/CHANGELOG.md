@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.1.0
+
+- When another player shouts, the compass marks the direction it came from for two minutes,
+  using the game's own shout icon. Turning towards a marker names whoever called. Configurable
+  with `Compass.ShoutMarkerSeconds`, or `0` to turn it off.
+
 ## 1.0.0
 
 First release.

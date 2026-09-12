@@ -38,6 +38,7 @@ namespace NoMapWayfinding
         public static bool CompassShowBiome => PluginConfig.CompassShowBiome.Value;
         public static string CompassColor => PluginConfig.CompassColor.Value;
         public static string CompassMarkerColor => PluginConfig.CompassMarkerColor.Value;
+        public static float CompassShoutSeconds => PluginConfig.CompassShoutSeconds.Value;
         public static UnityEngine.KeyCode SettingsKey => PluginConfig.SettingsKey.Value;
         public static float CompassWidth => PluginConfig.CompassWidth.Value;
         public static float CompassTopOffset => PluginConfig.CompassTopOffset.Value;

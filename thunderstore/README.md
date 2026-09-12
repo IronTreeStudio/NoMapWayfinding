@@ -13,6 +13,8 @@ showing everything your group has found between them.
   and it closes.
 - **One touch shares everything.** Using a table merges exploration in both directions, so
   anyone who visits leaves with everything the group has found.
+- **Shouts show up on the compass.** When someone shouts, the direction it came from is marked
+  for two minutes with the game's own shout icon, and turning towards it names who called.
 - **Tables are not a portable GPS.** A newly built table has to stand a while before it can
   be read, so one cannot be carried around, planted to check your position, and dismantled
   again.

@@ -94,6 +94,7 @@ are read live, so a config manager can change them without restarting.
 | `Compass.ShowBiomeName` | `true` | Show the current biome under the compass. |
 | `Compass.Color` | `#FFF7E0` | Headings, ticks and biome name. Hex, or a colour name like `cyan`. |
 | `Compass.MarkerColor` | `#FFF0C7` | The fixed centre marker showing the way you face. |
+| `Compass.ShoutMarkerSeconds` | `120` | Mark where another player shouted from, for this long. `0` disables. |
 | `Compass.SettingsKey` | `F7` | Opens an in-game panel for tuning the colours live. `None` disables it. |
 | `Compass.Width` | `460` | Ribbon width in pixels. |
 | `Compass.TopOffset` | `16` | Distance from the top of the screen. |

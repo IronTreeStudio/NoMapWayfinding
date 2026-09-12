@@ -35,6 +35,9 @@ namespace NoMapWayfinding
             Require(missing, "Piece.SetCreator", AccessTools.Method(typeof(Piece), "SetCreator"));
             Require(missing, "Piece.DropResources", AccessTools.Method(typeof(Piece), "DropResources"));
 
+            // Used to put a marker on the compass when someone shouts.
+            Require(missing, "Chat.OnNewChatMessage", AccessTools.Method(typeof(Chat), "OnNewChatMessage"));
+
             if (missing.Count == 0)
             {
                 return true;

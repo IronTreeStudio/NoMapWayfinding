@@ -202,7 +202,9 @@ namespace NoMapWayfinding.Sync
 
             if (ZNet.instance == null)
             {
+                // Back to the menu: nothing from the last world should survive into the next one.
                 WorldRules.Reset();
+                ShoutMarkers.Clear();
                 ModdedClientGate.Tick();
                 return;
             }

@@ -1,3 +1,6 @@
+using System.Collections.Generic;
+using System.Reflection;
+using HarmonyLib;
 using UnityEngine;
 
 namespace NoMapWayfinding
@@ -20,6 +23,9 @@ namespace NoMapWayfinding
         private Texture2D _pixel;
         private readonly CachedColor _color = new CachedColor(new Color(1f, 0.97f, 0.88f));
         private readonly CachedColor _markerColor = new CachedColor(new Color(1f, 0.94f, 0.78f));
+        private Texture _shoutTexture;
+        private Rect _shoutCoords;
+        private bool _shoutChecked;
         private string _biomeName = "";
         private float _biomeChangedAt = -99f;
         private GUIStyle _labelStyle;
@@ -268,6 +274,160 @@ namespace NoMapWayfinding
                 _pixel);
 
             GUI.color = previousColor;
+
+            DrawShoutMarkers(heading, strip, scale, pixelsPerDegree);
+        }
+
+        /// <summary>
+        /// Draw a marker for every shout still being remembered, at the bearing it came from.
+        ///
+        /// Markers scroll off the ends with everything else rather than pinning themselves to the
+        /// edge. A compass that shows you something behind you is not a compass, and turning
+        /// around to find the marker is the behaviour worth having.
+        /// </summary>
+        private void DrawShoutMarkers(float heading, Rect strip, float scale, float pixelsPerDegree)
+        {
+            List<ShoutMarkers.Marker> markers = ShoutMarkers.Active();
+            if (markers.Count == 0)
+            {
+                return;
+            }
+
+            Player player = Player.m_localPlayer;
+            if (player == null)
+            {
+                return;
+            }
+
+            Vector3 eye = player.transform.position;
+            float centre = strip.width * 0.5f;
+            float size = 18f * scale;
+
+            // Sits just above the ribbon, clamped so a small TopOffset cannot push it off screen.
+            float bandY = Mathf.Max(0f, strip.y - size - 2f * scale);
+            var band = new Rect(strip.x, bandY, strip.width, size);
+
+            Color previous = GUI.color;
+            ShoutMarkers.Marker nearest = null;
+            float nearestOffset = float.MaxValue;
+            float nearestX = 0f;
+
+            GUI.BeginGroup(band);
+
+            foreach (ShoutMarkers.Marker marker in markers)
+            {
+                Vector3 delta = marker.Position - eye;
+
+                // Valheim faces +Z at a heading of zero, so atan2(x, z) is already compass north.
+                float bearing = Mathf.Atan2(delta.x, delta.z) * Mathf.Rad2Deg;
+                float offset = Mathf.DeltaAngle(heading, bearing) * pixelsPerDegree;
+                float x = centre + offset;
+
+                if (x < -size || x > strip.width + size)
+                {
+                    continue;
+                }
+
+                float alpha = PluginConfig.CompassOpacity.Value * ShoutMarkers.Opacity(marker);
+                if (alpha <= 0.01f)
+                {
+                    continue;
+                }
+
+                DrawShoutIcon(new Rect(x - size * 0.5f, 0f, size, size), alpha);
+
+                if (Mathf.Abs(offset) < nearestOffset)
+                {
+                    nearest = marker;
+                    nearestOffset = Mathf.Abs(offset);
+                    nearestX = x;
+                }
+            }
+
+            GUI.EndGroup();
+
+            // Name only the one you are closest to facing. Naming all of them turns a thin ribbon
+            // into overlapping text the moment two people shout.
+            if (nearest != null && !string.IsNullOrEmpty(nearest.Name) && nearestOffset < 60f * scale)
+            {
+                _labelStyle.fontSize = Mathf.Max(8, Mathf.RoundToInt(12f * scale));
+                float alpha = PluginConfig.CompassOpacity.Value * ShoutMarkers.Opacity(nearest);
+                var nameRect = new Rect(band.x + nearestX - 70f * scale, band.y - 14f * scale, 140f * scale, 14f * scale);
+
+                GUI.color = new Color(0f, 0f, 0f, alpha * 0.7f);
+                _labelStyle.normal.textColor = Color.white;
+                GUI.Label(new Rect(nameRect.x + 1f, nameRect.y + 1f, nameRect.width, nameRect.height), nearest.Name, _labelStyle);
+
+                GUI.color = WithAlpha(_color.Get(Settings.CompassColor), alpha);
+                GUI.Label(nameRect, nearest.Name, _labelStyle);
+            }
+
+            GUI.color = previous;
+        }
+
+        /// <summary>
+        /// Borrow Valheim's own shout pin sprite so the marker matches what the map would show.
+        /// Minimap.GetSprite is private, hence the cached reflection; if it ever disappears the
+        /// compass falls back to a plain diamond rather than drawing nothing.
+        /// </summary>
+        private void DrawShoutIcon(Rect rect, float alpha)
+        {
+            EnsureShoutSprite();
+
+            if (_shoutTexture != null)
+            {
+                GUI.color = new Color(1f, 1f, 1f, alpha);
+                GUI.DrawTextureWithTexCoords(rect, _shoutTexture, _shoutCoords);
+                return;
+            }
+
+            GUI.color = WithAlpha(_markerColor.Get(Settings.CompassMarkerColor), alpha);
+            float half = rect.width * 0.5f;
+            for (int i = 0; i < Mathf.RoundToInt(rect.height); i++)
+            {
+                float t = Mathf.Abs(i - half) / half;
+                float w = Mathf.Max(1f, rect.width * (1f - t));
+                GUI.DrawTexture(new Rect(rect.x + half - w * 0.5f, rect.y + i, w, 1f), _pixel);
+            }
+        }
+
+        private void EnsureShoutSprite()
+        {
+            if (_shoutChecked)
+            {
+                return;
+            }
+
+            _shoutChecked = true;
+
+            try
+            {
+                Minimap map = Minimap.instance;
+                MethodInfo getSprite = AccessTools.Method(typeof(Minimap), "GetSprite", new[] { typeof(Minimap.PinType) });
+                if (map == null || getSprite == null)
+                {
+                    return;
+                }
+
+                var sprite = getSprite.Invoke(map, new object[] { Minimap.PinType.Shout }) as Sprite;
+                if (sprite == null || sprite.texture == null)
+                {
+                    return;
+                }
+
+                // The sprite may sit in an atlas, so map its rect into normalised coordinates.
+                Rect r = sprite.textureRect;
+                _shoutTexture = sprite.texture;
+                _shoutCoords = new Rect(
+                    r.x / sprite.texture.width,
+                    r.y / sprite.texture.height,
+                    r.width / sprite.texture.width,
+                    r.height / sprite.texture.height);
+            }
+            catch (System.Exception e)
+            {
+                WayfindingPlugin.Log.LogWarning("Could not borrow the shout icon: " + e.Message);
+            }
         }
 
         private void DrawTick(float x, float height, float scale, float alpha)
