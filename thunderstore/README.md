@@ -85,6 +85,7 @@ included, and this mod adds back the only thing it cannot do - reading the share
 | `Compass.Opacity` | `0.85` | Opacity at the centre. |
 | `Compass.Color` | `#FFF7E0` | Headings, ticks and biome name. |
 | `Compass.MarkerColor` | `#FFF0C7` | The centre marker showing the way you face. |
+| `Compass.ShoutMarkerSeconds` | `120` | Mark where another player shouted from, for this long. `0` disables. |
 | `Compass.SettingsKey` | `F7` | Opens the colour panel. `None` disables it. |
 | `Server.EnforceOnClients` | `true` | Server side. Send this server's rules to modded clients. |
 | `Server.RequireModdedClients` | `false` | Server side. Turn away players without the mod. |
