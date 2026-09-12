@@ -19,7 +19,10 @@ cartography table, showing everyone's exploration.
 
 ## Install
 
-Copy `NoMapWayfinding.dll` into `<Valheim>\BepInEx\plugins\`.
+On Thunderstore as
+[IronTree/NoMapWayfinding](https://thunderstore.io/c/valheim/p/IronTree/NoMapWayfinding/), so a
+mod manager will do it for you. By hand, copy `NoMapWayfinding.dll` into
+`<Valheim>\BepInEx\plugins\`.
 
 The mod never changes world state or the network protocol, so it works on vanilla servers and
 alongside players who are not running it.
