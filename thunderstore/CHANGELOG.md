@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.1.1
+
+- Fixed your own shouts appearing on the compass. The check compared the routed-RPC peer id
+  against a character id - two different numbers, so it never matched.
+- Fixed the shout marker never being named. The label was positioned above the icon band, which
+  is already clamped to the top of the screen, so at the default offset it was drawn off-screen.
+  It now sits on its own line under the compass.
+
 ## 1.1.0
 
 - When another player shouts, the compass marks the direction it came from for two minutes,

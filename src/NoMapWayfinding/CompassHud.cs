@@ -26,6 +26,7 @@ namespace NoMapWayfinding
         private Texture _shoutTexture;
         private Rect _shoutCoords;
         private bool _shoutChecked;
+        private ShoutMarkers.Marker _namedMarker;
         private string _biomeName = "";
         private float _biomeChangedAt = -99f;
         private GUIStyle _labelStyle;
@@ -46,6 +47,9 @@ namespace NoMapWayfinding
             {
                 DrawBiome();
             }
+
+            // After the biome, because that is what its vertical position is measured from.
+            DrawShoutName();
         }
 
         private void OnDestroy()
@@ -287,6 +291,9 @@ namespace NoMapWayfinding
         /// </summary>
         private void DrawShoutMarkers(float heading, Rect strip, float scale, float pixelsPerDegree)
         {
+            // Cleared every frame so a name cannot outlive the marker it belongs to.
+            _namedMarker = null;
+
             List<ShoutMarkers.Marker> markers = ShoutMarkers.Active();
             if (markers.Count == 0)
             {
@@ -328,7 +335,7 @@ namespace NoMapWayfinding
                     continue;
                 }
 
-                float alpha = PluginConfig.CompassOpacity.Value * ShoutMarkers.Opacity(marker);
+                float alpha = Settings.CompassOpacity * ShoutMarkers.Opacity(marker);
                 if (alpha <= 0.01f)
                 {
                     continue;
@@ -347,20 +354,49 @@ namespace NoMapWayfinding
             GUI.EndGroup();
 
             // Name only the one you are closest to facing. Naming all of them turns a thin ribbon
-            // into overlapping text the moment two people shout.
-            if (nearest != null && !string.IsNullOrEmpty(nearest.Name) && nearestOffset < 60f * scale)
+            // into overlapping text the moment two people shout. The threshold is a share of the
+            // ribbon rather than a fixed pixel count, so it holds up at any Width or Scale.
+            if (nearest != null && !string.IsNullOrEmpty(nearest.Name) && nearestOffset < strip.width * 0.25f)
             {
-                _labelStyle.fontSize = Mathf.Max(8, Mathf.RoundToInt(12f * scale));
-                float alpha = PluginConfig.CompassOpacity.Value * ShoutMarkers.Opacity(nearest);
-                var nameRect = new Rect(band.x + nearestX - 70f * scale, band.y - 14f * scale, 140f * scale, 14f * scale);
-
-                GUI.color = new Color(0f, 0f, 0f, alpha * 0.7f);
-                _labelStyle.normal.textColor = Color.white;
-                GUI.Label(new Rect(nameRect.x + 1f, nameRect.y + 1f, nameRect.width, nameRect.height), nearest.Name, _labelStyle);
-
-                GUI.color = WithAlpha(_color.Get(Settings.CompassColor), alpha);
-                GUI.Label(nameRect, nearest.Name, _labelStyle);
+                _namedMarker = nearest;
             }
+
+            GUI.color = previous;
+        }
+
+        /// <summary>
+        /// Name the shout you are closest to facing, on its own line under the compass.
+        ///
+        /// This sits below the biome rather than above the icons. The icon band is already
+        /// clamped against the top of the screen, so at the default TopOffset there is simply no
+        /// room above it - a label drawn there lands at a negative Y and is never seen.
+        /// </summary>
+        private void DrawShoutName()
+        {
+            if (_namedMarker == null)
+            {
+                return;
+            }
+
+            float scale = Settings.CompassScale;
+            float y = Settings.CompassTopOffset * scale + BaseHeight * scale + 2f * scale;
+            if (Settings.CompassShowBiome)
+            {
+                y += 20f * scale;
+            }
+
+            float alpha = Settings.CompassOpacity * ShoutMarkers.Opacity(_namedMarker);
+            var rect = new Rect(0f, Mathf.Round(y), Screen.width, 18f * scale);
+
+            Color previous = GUI.color;
+            _labelStyle.fontSize = Mathf.Max(8, Mathf.RoundToInt(12f * scale));
+            _labelStyle.normal.textColor = Color.white;
+
+            GUI.color = new Color(0f, 0f, 0f, alpha * 0.7f);
+            GUI.Label(new Rect(rect.x + 1f, rect.y + 1f, rect.width, rect.height), _namedMarker.Name, _labelStyle);
+
+            GUI.color = WithAlpha(_color.Get(Settings.CompassColor), alpha);
+            GUI.Label(rect, _namedMarker.Name, _labelStyle);
 
             GUI.color = previous;
         }

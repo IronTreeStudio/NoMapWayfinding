@@ -22,8 +22,11 @@ namespace NoMapWayfinding.Patches
             }
 
             // Your own shout would sit on your own heading and tell you nothing.
-            Player player = Player.m_localPlayer;
-            if (player != null && senderID == player.GetPlayerID())
+            //
+            // senderID is the routed-RPC peer id, which is a different number from
+            // Player.GetPlayerID(). Compare it the way Chat.OnNewChatMessage itself does, at the
+            // top of the very method this is a postfix on.
+            if (ZNet.instance != null && senderID == ZNet.instance.LocalPlayerCharacterID.UserID)
             {
                 return;
             }

@@ -27,7 +27,7 @@ namespace NoMapWayfinding
     {
         public const string Guid = "com.rynwind.nomapwayfinding";
         public const string Name = "NoMap Wayfinding";
-        public const string Version = "1.1.0";
+        public const string Version = "1.1.1";
 
         internal static ManualLogSource Log;
 
